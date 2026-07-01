@@ -1,3 +1,4 @@
+
 /* ==========================================================================
    CONTROL DE COMPLETITUD DE CUENTAS CONTABLES — DWH
    Ejecutar: días 8-9 de cada mes, antes del proceso oficial de cierre (día 10)
