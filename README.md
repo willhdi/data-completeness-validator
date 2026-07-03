@@ -84,7 +84,29 @@ Todas las demás cuentas sí llevan el control.
 - [ ] Pedir la tabla de reglas de calidad que Andrey está armando.
 - [ ] Confirmar con Andrey/Javier si se confirmó la causa de la diferencia de ~3M en prima (¿es por la "ayuda especial"?).
 - [ ] Preguntar si tu control de completitud debe extenderse ya mismo a canal no tradicional o si es un paso posterior.
+- [ ] Validar con Karen (Karencita) cómo se van a organizar/manejar todas las reglas y controles de calidad que se están recibiendo de distintas personas (Juan Sebastián, etc.).
 
-## 5. Resumen en una frase
+## 5. Reunión 3 (2026-07-03) — Controles de cocorretaje en CDP (Juan Sebastián) + organización general del plan de controles
 
-Estás construyendo el primer control de calidad (completitud de cuentas contables en DWH) de un plan más grande de conciliación DWH–CDP que nació porque se detectó una diferencia de ~3M en prima; este mismo control es el prototipo que luego se replicará en el tablero de canal no tradicional.
+Sesión de Juan Sebastián mostrando a Andrey (y Wilson como oyente) los controles de calidad de **cocorretaje en CDP** que construyó, sobre la tabla de cocorretaje (mencionada en la reunión como "DCDP... riesgo coco versión 2" — confirmar nombre exacto de la tabla/vista). En total son **4 controles**.
+
+### Objetivo del control
+Auditar que todas las pólizas/documentos con corretaje estén presentes en la tabla de cocorretaje de CDP y tengan una distribución (participación) correcta entre corredor líder y co-corredores.
+
+### Reglas de negocio confirmadas en la reunión
+- Base: registros que tengan **prima**, según la reproducción/Transaction Monitoring.
+- Filtro: **`Current_Record_Flag = 1`**.
+- Periodo de comparación contra producción: desde **`202501`** en adelante.
+- Pendiente (Juan lo va a implementar): parametrizar el **periodo** de entrada para poder auditar cualquier periodo, no solo uno fijo.
+
+Con esta entrega, Andrey da por **cerrado** el tema de alertas del control de calidad de cocorretaje.
+
+### Puntos organizacionales (aplican a todo el plan de controles, no solo a cocorretaje)
+- Todas las reglas/controles de calidad que están llegando de distintas personas (Juan Sebastián y otros) se deben **organizar** — Andrey pidió validar con **Karen (Karencita)** cómo manejarlos.
+- El control de **primas** ya genera alertas cuando el control salta, pero construir eso tomó mucho tiempo. **De aquí en adelante**, los controles nuevos se dejarán solo hasta el punto de detección (semáforo/resultado) y el equipo de Andrey construirá las alertas aparte.
+- Falta decidir si las alertas se van a manejar como un **tablero de alertas** o si se replica el esquema que se usó para primas.
+- Idea general: ir recopilando todos los códigos/controles que se vayan entregando para, entre todos, construir las bases de control de calidad de lo que se vaya migrando (incluye el control de completitud de cuentas contables que está construyendo Wilson).
+
+## 6. Resumen en una frase
+
+Estás construyendo el primer control de calidad (completitud de cuentas contables en DWH) de un plan más grande de conciliación DWH–CDP que nació porque se detectó una diferencia de ~3M en prima; este mismo control es el prototipo que luego se replicará en el tablero de canal no tradicional, y convive con otros controles en construcción (p. ej. cocorretaje de Juan Sebastián) que el equipo de Andrey planea organizar y alertar de forma centralizada.
