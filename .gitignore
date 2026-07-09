@@ -4,3 +4,4 @@ credenciales_local.py
 __pycache__/
 .ipynb_checkpoints/
 notebooks/dashboard_completitud.html
+tablerodeejemplo.html
