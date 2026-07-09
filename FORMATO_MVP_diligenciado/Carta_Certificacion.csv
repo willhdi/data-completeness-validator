@@ -1,0 +1,14 @@
+﻿Campo;Valor
+Fecha;(pendiente) — el proceso aún no se valida con datos completos
+Asunto;Certificación de Validación Técnica de Cifras
+Nombre del proceso o sistema de información;Control de completitud de cuentas contables — DWH (control_completitud_cuentas.sql, repositorio data-completeness-validator)
+Alcance operativo aplicable;3. Certificación de cifras en todos los niveles de agregación relevantes: validación mensual de completitud por cuenta contable + libro + periodo (AAAAMM), sobre 4 fuentes de reserva del DWH.
+Scripts técnicos autorizados;control_completitud_cuentas.sql (los resultados se anexarían a la comunicación una vez ejecutado contra un mes cerrado)
+Data Owner — Nombre completo;(pendiente) — no está definido en el repositorio
+Data Owner — Cargo;(pendiente)
+Data Owner — Correo electrónico;(pendiente)
+Data Owner — Firma;(pendiente)
+Data Steward — Nombre completo;(pendiente) — no está definido en el repositorio
+Data Steward — Cargo;(pendiente)
+Data Steward — Correo electrónico;(pendiente)
+Data Steward — Firma;(pendiente)

@@ -1,0 +1,20 @@
+﻿Sección;Detalle
+Contexto y objetivo de producto;Se detectó una diferencia de más de 3 millones de pesos en la prima entre el DWH y el CDP para ciertos meses, aunque la cantidad de pólizas sí coincide entre ambos sistemas. Como respuesta, Gobierno de Datos necesita un control de completitud que avise, ANTES del cierre contable (~día 10 de cada mes), si a alguna cuenta contable le está faltando información en el DWH.
+Historia de Usuario — ¿Quién?;Como analista de Gobierno de Datos
+Historia de Usuario — ¿Cómo? (funcionalidad);quiero un control automático (script SQL) que verifique que el campo VALOR_RESERVA_CONTABLE tenga valor (no esté nulo) para cada combinación de cuenta contable + libro + periodo en el DWH
+Historia de Usuario — ¿Para qué?;para alertar al dueño de la tabla los días 8-9 de cada mes, antes del cierre contable del día 10, y evitar que el reporte oficial salga con información incompleta
+Criterios de Aceptación;Campos de salida: fuente, cuenta, libro, periodo_contable_analisis, total_registros, con_valor, sin_valor, pct_completitud, semaforo.
+Criterios de Aceptación;Fuentes de datos (DWH SQL Server, base Liberty, esquema RESERVAS): DIRECTA_RESERVA_INTERFAZ, CEDIDAS_RESERVA_INTERFAZ, CEDIDAS_RESERVA_INTERFAZ_IAXIS, CEDIDAS_TERREMOTO_RESERVA_INTERFAZ.
+Criterios de Aceptación;Formato de salida: tabla resumen tipo semáforo (COMPLETO / ALERTA), ordenada con las ALERTAs primero.
+Criterios de Aceptación;Periodicidad: mensual, días 8-9, antes del proceso oficial de cierre (~día 10). Periodo parametrizable vía @PERIODO en formato AAAAMM.
+Criterios de Aceptación;"Exclusiones: Incurrido, Salvamentos, Recobros e IVA AG (cubierto por el filtro Libro <> 'AG'); hay 2 cuentas adicionales excluidas pendientes de confirmar con Andrey."
+Criterios de Aceptación;"El control valida únicamente la existencia del dato (no nulo); no valida la razonabilidad del valor."
+Tipos de Producto (Entregables);Script SQL: control_completitud_cuentas.sql (parámetro @PERIODO en formato AAAAMM).
+Tipos de Producto (Entregables);Tabla resumen: una fila por fuente + cuenta + libro + periodo, con porcentaje de completitud y semáforo.
+Tipos de Producto (Entregables);Tablero HTML de completitud: notebooks/dashboard_completitud.html (generado desde notebooks/tablero_completitud.ipynb).
+Tipos de Producto (Entregables);Documentación: README.md, 'Hallazgos y Estado del Proyecto.md' y OriginProcessql/EXPLICACION_SCRIPTS.md.
+Restricciones;"Solo valida que el dato exista (no nulo); la validación de razonabilidad / valores atípicos es la Fase 2, que aún no ha iniciado."
+Restricciones;"El entregable llega hasta el semáforo (COMPLETO/ALERTA); las alertas automáticas las construye el equipo de Andrey por separado."
+Restricciones;No replica la lógica compleja de los procesos de producción (corretaje/cocorretaje, tomador, intermediarios) — es intencionalmente simple.
+Valor para el Negocio;Detectar antes del cierre mensual las cuentas contables con información incompleta en el DWH, evitando que el reporte oficial salga con errores. Es el prototipo que luego se replicará para el módulo 'canal no tradicional' y convive con otros controles del equipo (ej. cocorretaje en CDP).
+Validación;"Responsable de la validación: Andrey (líder del tema en Gobierno de Datos). El script está construido pero aún no se ha probado contra un mes cerrado con datos completos; fecha de validación pendiente."
