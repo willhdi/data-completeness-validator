@@ -19,7 +19,7 @@
 
 
 -- Ajustar al periodo a verificar (YYYYMM)
-DECLARE @PERIODO INT = 202708;
+DECLARE @PERIODO INT = 202606;
 
 
 SELECT
