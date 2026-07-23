@@ -246,6 +246,9 @@ const DIMS = [
   {tipo:'completitud', total:'TOTAL_PERIODO', label:'Completitud', malos:'Sin valor', color:'var(--s1)',
    umbral:'completitud',
    desc:'% de registros con VALOR_RESERVA_CONTABLE distinto de nulo, por combinación fuente · cuenta · libro.'},
+  {tipo:'validez', total:'TOTAL_PERIODO', label:'Validez', malos:'Filas inválidas', color:'var(--s3)',
+   umbral:'validez',
+   desc:'% de filas bien formadas: RAMO_PROD presente (fuentes cedidas), periodo contable AAAAMM válido y libro no vacío.'},
   {tipo:'variacion', total:'TOTAL_PERIODO', label:'Variación (Estabilidad)', malos:'Registros en alerta', color:'var(--s2)',
    umbral:'variacion',
    desc:'Qué tan estable es el valor y el volumen de cada combinación frente a su propio histórico de 12 meses. 100 = sin cambios atípicos.'},
@@ -254,6 +257,10 @@ const DIMS = [
 const DISPO = [
   {campo:'disponibilidad_carga', label:'Disponibilidad de carga', umbral:'disponibilidad',
    desc:'% de combinaciones fuente · cuenta · libro que sí tuvieron al menos una fila cargada ese mes (lo contrario de un "hueco de carga").'},
+  {campo:'frescura_carga', label:'Frescura de las fuentes', umbral:'frescura',
+   desc:'% de las 4 tablas fuente con al menos una fila cargada ese mes. Una sola fuente rezagada deja el indicador en 75.'},
+  {campo:'valores_en_cero', label:'Valores en cero', umbral:'ceros',
+   desc:'% de registros con VALOR_RESERVA_CONTABLE distinto de 0. Un cero puede ser legítimo (reserva liberada), pero un salto brusco en los ceros suele anunciar un problema de carga.'},
 ];
 const ESTADOS = {
   'BUENO':   {c:'var(--good)',     i:'✓', imp:'OK'},
@@ -615,35 +622,42 @@ function renderInfo(){
   const umbTxt = k => 'BUENO ≥ '+u[k].BUENO+' · ALERTA ≥ '+u[k].ALERTA+' · GRAVE ≥ '+u[k].GRAVE+' · CRÍTICO < '+u[k].GRAVE;
   document.getElementById('pg-info').innerHTML = '<div class="info-grid">'
     + '<section><h3>Nombre del reporte</h3>'
-    + '<p class="kv"><b>Completitud y Variación — Reservas Contables DWH</b> (tablero HTML autocontenido)</p>'
+    + '<p class="kv"><b>Calidad de Datos — Reservas Contables DWH</b> (tablero HTML autocontenido)</p>'
     + '<p class="kv"><b>Data Steward:</b> Karen Carvajal — Directora de Gobierno de Datos<br><b>Data Owner:</b> Javier Gualdrón — Director de Ingeniería de Datos<br>'
     + '<b>Desarrollador del reporte:</b> Wilson Jerez — Analista Senior de Gobierno de Datos<br>'
     + '<b>Esta versión:</b> notebook de solo lectura (SELECT directo, periodos autodetectados)<br>'
     + '<b>Generado:</b> '+DATA.generado+'</p>'
     + '<h3>Descripción del reporte</h3>'
-    + '<p>Control de completitud y variación de las reservas contables en el DWH, en 5 secciones:</p><ul>'
+    + '<p>Control de calidad de datos de las reservas contables en el DWH (completitud, validez, variación, disponibilidad, frescura y valores en cero), en 5 secciones:</p><ul>'
     + '<li><b>Resumen ejecutivo:</b> anillos por indicador, DQ Score, tendencia, distribución de registros afectados y semáforo.</li>'
     + '<li><b>Detalle por combinación:</b> calidad fuente por fuente · cuenta · libro, para priorizar revisión.</li>'
     + '<li><b>Tendencia e historia:</b> evolución de los últimos 12 periodos y variación vs. el anterior.</li>'
-    + '<li><b>Análisis de alertas:</b> distribución por indicador y combinación, con Pareto 80/20.</li></ul>'
+    + '<li><b>Análisis de alertas:</b> distribución por indicador y combinación, con Pareto 80/20.</li>'
+    + '<li><b>Información:</b> esta página — indicadores, umbrales y notas metodológicas.</li></ul>'
     + '<h3>Fuentes</h3><ul>'
     + '<li><b>Fuente principal:</b> '+DATA.fuente+'</li>'
     + '<li>Réplica simplificada de <code>control_completitud_cuentas.sql</code>: mismas 4 fuentes, mismas cuentas, mismos filtros (<code>Libro &lt;&gt; \'AG\'</code>).</li></ul>'
     + '</section>'
     + '<section><h3>Descripción de indicadores</h3><ul>'
     + '<li><b>Completitud:</b> % de registros con <code>VALOR_RESERVA_CONTABLE</code> no nulo, por combinación.</li>'
+    + '<li><b>Validez:</b> % de filas bien formadas: <code>RAMO_PROD</code> presente (en las fuentes cedidas, donde el control canónico descarta esas filas en silencio), periodo contable <code>AAAAMM</code> válido y libro no vacío.</li>'
     + '<li><b>Variación (Estabilidad):</b> qué tan parecido es el valor y el volumen de una combinación a su propio histórico de 12 meses. Se penaliza si se aleja mucho del promedio (z-score) o si cambia mucho respecto al mes anterior (%) — en valor <u>o</u> en cantidad de registros, lo que sea peor.</li>'
-    + '<li><b>DQ Score (Comportamiento general):</b> promedio simple de Completitud y Variación.</li>'
-    + '<li><b>Disponibilidad de carga:</b> informativa, fuera del DQ Score — % de combinaciones que sí tuvieron alguna fila ese mes (un hueco de carga suele ser un problema del proceso de carga, no del dato en sí).</li></ul>'
+    + '<li><b>DQ Score (Comportamiento general):</b> promedio simple de Completitud, Validez y Variación.</li>'
+    + '<li><b>Disponibilidad de carga:</b> informativa, fuera del DQ Score — % de combinaciones que sí tuvieron alguna fila ese mes (un hueco de carga suele ser un problema del proceso de carga, no del dato en sí).</li>'
+    + '<li><b>Frescura de las fuentes:</b> informativa — % de las 4 tablas fuente con datos en el mes; detecta una fuente rezagada aunque las demás estén al día.</li>'
+    + '<li><b>Valores en cero:</b> informativa — % de registros con el valor distinto de 0. Un cero puede ser legítimo; lo que se vigila es un salto brusco en la cantidad de ceros.</li></ul>'
     + '<h3>Umbrales de estado</h3><ul>'
-    + '<li>Generales (Completitud, Variación y Disponibilidad): '+umbTxt('default')+'</li>'
+    + '<li>Completitud y Validez: '+umbTxt('completitud')+'</li>'
+    + '<li>Variación: '+umbTxt('variacion')+'</li>'
+    + '<li>Informativas — Disponibilidad: '+umbTxt('disponibilidad')+' · Frescura: '+umbTxt('frescura')+' · Ceros: '+umbTxt('ceros')+'</li>'
+    + '<li>DQ Score: '+umbTxt('default')+'</li>'
     + (TARGET != null ? '<li>Target de referencia: '+TARGET+' % (línea punteada en tendencia).</li>' : '')
     + '</ul>'
     + '<h3>Notas metodológicas</h3><ul>'
     + '<li>Cuentas excluidas por diseño (tienen su propio control, no están aquí): Incurrido, Salvamentos, Recobros, IVA AG (filtro <code>Libro &lt;&gt; \'AG\'</code>) — + 2 cuentas adicionales pendientes de confirmar con Andrey.</li>'
     + '<li>Los umbrales de variación (z-score, % vs. mes anterior) y de estado (BUENO/ALERTA/GRAVE/CRÍTICO) son una primera propuesta — es la "Fase 2" mencionada en <code>Hallazgos y Estado del Proyecto.md</code>, todavía pendiente de validar con el equipo.</li>'
     + '<li>Periodos autodetectados: los últimos 12 meses cargados en el DWH, sin fechas quemadas.</li>'
-    + '<li>Este control solo valida existencia (completitud) y variación frente al propio histórico — no valida si el número es "correcto" en un sentido contable.</li></ul>'
+    + '<li>Este control valida existencia (completitud), forma (validez) y variación frente al propio histórico — no valida si el número es "correcto" en un sentido contable.</li></ul>'
     + '</section></div>';
 }
 
