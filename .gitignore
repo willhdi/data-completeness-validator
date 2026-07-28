@@ -7,3 +7,6 @@ notebooks/dashboard_completitud.html
 tablerodeejemplo.html
 *.xlsx
 .claude/
+
+# Salidas de Vigentes OTH: traen nombre y documento de los tomadores, no van a git
+reports/vigentes_oth_*.csv
