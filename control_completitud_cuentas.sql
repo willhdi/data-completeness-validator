@@ -154,3 +154,4 @@ ORDER BY
     fuente,
     periodo_contable_analisis,
     cuenta;
+
